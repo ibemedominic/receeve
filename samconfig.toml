@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "receeve"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-17f3mbbpjt1l6"
+s3_prefix = "receeve"
+region = "us-west-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+parameter_overrides = "TopicName=\"MAILGUN\" Region=\"us-west-1\" TableName=\"MAILGUN\" SigningKey=\"6c237c09f7675ab03ffd0d48aae418aa-c250c684-5267dbb3\""
