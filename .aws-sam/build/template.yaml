@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'mailgun-webhook
+
+  Receeve Template for mailgun-webhook
+
+  '
+Globals:
+  Function:
+    Timeout: 30
+Parameters:
+  TopicName:
+    Type: String
+    Description: The Name of the Mailgun Topic
+    Default: MAILGUN
+  Region:
+    Type: String
+    Description: The Aws Region in which the resources should be hosted
+    Default: us-west-1
+  TableName:
+    Type: String
+    Description: The Name of the DynamoDB table that is used to store the mailgun
+      event
+    Default: MAILGUN
+  SigningKey:
+    Type: String
+    Description: The Mailgun Signing key used to sign the mailgun events
+    Default: 6c237c09f7675ab03ffd0d48aae418aa-c250c684-5267dbb3
+Resources:
+  MailgunTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: Mailgun Topic
+      TopicName:
+        Ref: TopicName
+  MailgunDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: Id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: Id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName:
+        Ref: TableName
+  MailgunCallbackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: MailgunCallbackFunction
+      Handler: callbacks/mailgun.mailGunLambdaHandler
+      Runtime: nodejs14.x
+      Environment:
+        Variables:
+          TOPICNAME:
+            Ref: TopicName
+          TOPICARN:
+            Ref: MailgunTopic
+          REGION:
+            Ref: Region
+          TABLENAME:
+            Ref: TableName
+          SIGNINGKEY:
+            Ref: SigningKey
+          LOCAL: N
+      Policies:
+      - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+      - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      Architectures:
+      - x86_64
+      Events:
+        Mailgun:
+          Type: Api
+          Properties:
+            Path: /receeve
+            Method: post
+    Metadata:
+      SamResourceId: MailgunCallbackFunction
+Outputs:
+  MailgunCallbackApi:
+    Description: API Gateway endpoint URL for Prod stage for Mailgun Callback function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/receeve/
+  MailgunCallbackFunction:
+    Description: Mailgun Callback Function ARN
+    Value:
+      Fn::GetAtt:
+      - MailgunCallbackFunction
+      - Arn
+  MailgunCallbackFunctionIamRole:
+    Description: Implicit IAM Role created for Mailgun Callback function
+    Value:
+      Fn::GetAtt:
+      - MailgunCallbackFunction
+      - Arn

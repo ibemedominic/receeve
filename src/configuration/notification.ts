@@ -83,7 +83,7 @@ import { EmailEvent} from "../model/dto";
 
     const publishTopic = async (data : EmailEvent) => 
     {
-        var content = { Provider : "Mailgun", timestamp : data["event-data"].timestamp, type : data["event-data"].event };
+        let content = { Provider : "Mailgun", timestamp : data["event-data"].timestamp, type : "email " + data["event-data"].event };
         let params = {
             Message : JSON.stringify(content),
             TopicArn : TopicARN

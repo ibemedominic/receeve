@@ -24,8 +24,11 @@ const verify = (signingKey : string, options : EmailEvent) =>
     return (encodedToken === options.signature.signature)
 }
 
+// If we are running locally, create the Schema and TOpic accordingly
 if(isLocal)
 {
+    // The DynamoDB would fail the first time due to delayed creation cos of eventual consistency.
+    // This does not happen when cloud formation is used to deploy it
     createSchema();
     createTopic();
 }
@@ -37,7 +40,7 @@ if(isLocal)
  */
 export const mailGunLambdaHandler = async (event : APIGatewayProxyEventV2, context : any) => 
 {
-    var body  = event.body || "";
+    let body  = event.body || "";
     let eventData : EmailEvent;
     console.log("Data Recieved");
     console.log(event.body);
